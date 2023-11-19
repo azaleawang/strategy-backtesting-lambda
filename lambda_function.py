@@ -10,7 +10,7 @@ import logging
 #     {
 #       "messageId": "19dd0b57-b21e-4ac1-bd88-01bbb068cb78",
 #       "receiptHandle": "MessageReceiptHandle",
-#       "body": "{\"symbols\": [\"BTC/USDT\"], \"t_frame\": \"4h\"}",
+#       "body": "{\"symbols\": [\"ETH/USDT\"], \"t_frame\": \"1d\"}",
 #       "attributes": {
 #         "ApproximateReceiveCount": "1",
 #         "SentTimestamp": "1523232000000",
@@ -31,10 +31,10 @@ def lambda_handler(event, context):
         records = event['Records']
         for record in records:
             body = json.loads(record.get("body"))
-            print("recode body", body)
+            print("record body", body)
             symbols = body.get('symbols', ['BTC/USDT'])
             t_frame = body.get('t_frame', '4h')
-            since = body.get('since', '2017-01-01T00:00:00Z')
+            since = body.get('since', '2023-01-01T00:00:00Z')
             default_type = body.get('default_type', 'future')
 
         # get history data
@@ -46,12 +46,18 @@ def lambda_handler(event, context):
 
         result_json = run_strategy(df, RsiOscillator)
         url = "https://azaleasites.online/api/backtest/result"
-        response = requests.post(url, data=result_json, headers={'Content-Type': 'application/json'})
-
-        print(response.json())
+        data = { "info": body, "result": result_json }
+        response = requests.post(url, json=data, headers={'Content-Type': 'application/json'})
+        if response.status_code == 200:
+            try:
+                print("server received backtest result\t", response.json())
+            except ValueError as e:
+                print("Response is not in JSON format:", e)
+        else:
+            print("Error:", response.status_code, response.text)
         return {
             'statusCode': 200,
-            'data': response.json()
+            'data': data
         }
     
     except Exception as e:
