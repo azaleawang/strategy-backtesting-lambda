@@ -13,7 +13,7 @@ import importlib.util
 #         {
 #             "messageId": "19dd0b57-b21e-4ac1-bd88-01bbb068cb78",
 #             "receiptHandle": "MessageReceiptHandle",
-#             "body": '{"symbols": ["ETH/USDT"], "t_frame": "1d", "name": "SuperTrend"}',
+#             "body": '{"symbols": ["ETH/USDT"], "t_frame": "1h", "name": "SuperTrend", "s3_url": "https://my-trading-bot.s3.ap-northeast-1.amazonaws.com/backtest/strategy/"}',
 #             "attributes": {
 #                 "ApproximateReceiveCount": "1",
 #                 "SentTimestamp": "1523232000000",
@@ -29,8 +29,6 @@ import importlib.util
 #     ]
 # }
 
-# s3_url = os.getenv('s3_url')
-
 
 def lambda_handler(event, context):
     try:
@@ -40,16 +38,16 @@ def lambda_handler(event, context):
             print("record body", body)
             symbols = body.get("symbols", ["BTC/USDT"])
             t_frame = body.get("t_frame", "4h")
-            since = body.get("since", "2023-01-01T00:00:00Z")
+            since = body.get("since", "2018-01-01T00:00:00Z")
             default_type = body.get("default_type", "future")
             name = body.get("name", "RsiOscillator")
-            # s3_url = body.get("s3_url", s3_url)
             s3_url = body.get("s3_url")
             strategy_path = download_file(s3_url + name + ".py", name)
             Strategy = import_class_from_source(strategy_path, name)
 
         # get history data
-        df = history_data("binance", symbols, t_frame, since, default_type, True)
+        df = history_data("binance", symbols, t_frame, since, default_type)
+
         if df.empty:
             raise ValueError("No data found")
         else:
@@ -84,7 +82,7 @@ def run_strategy(data, strategy, name, symbols, t_frame):
     try:
         path = "/tmp/"
         filename = f"{name}_{'_'.join(symbols).replace('/', '-')}_{t_frame}_{strftime('%Y%m%d-%H%M%S', gmtime())}"
-        bt.plot(filename=path + filename, open_browser=False)
+        bt.plot(filename=path + filename, resample=False, open_browser=False)
         print("plot ok")
         s3_fn = upload_s3(path=path, name=filename + ".html")
     except Exception as e:
