@@ -44,6 +44,7 @@ def lambda_handler(event, context):
             s3_url = body.get("s3_url")
             strategy_path = download_file(s3_url + name + ".py", name)
             Strategy = import_class_from_source(strategy_path, name)
+            params = body.get("params", {})
 
         # get history data
         df = history_data("binance", symbols, t_frame, since, default_type)
@@ -53,7 +54,7 @@ def lambda_handler(event, context):
         else:
             print("Data found", df.tail())
 
-        result_json = run_strategy(df, Strategy, name, symbols, t_frame)
+        result_json = run_strategy(df, Strategy, params, name, symbols, t_frame)
         url = "https://azaleasites.online/api/backtest/result"
         data = {"info": body, "result": result_json}
         response = requests.post(
@@ -75,10 +76,10 @@ def lambda_handler(event, context):
         return {"statusCode": 500, "body": json.dumps({"error": str(e)})}
 
 
-def run_strategy(data, strategy, name, symbols, t_frame):
+def run_strategy(data, strategy, params, name, symbols, t_frame):
     s3_fn = None
     bt = Backtest(data, strategy, cash=1_000_000, commission=0.002)
-    backtest_result = bt.run()
+    backtest_result = bt.run(params = params)
     try:
         path = "/tmp/"
         filename = f"{name}_{'_'.join(symbols).replace('/', '-')}_{t_frame}_{strftime('%Y%m%d-%H%M%S', gmtime())}"
