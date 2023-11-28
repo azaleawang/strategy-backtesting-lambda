@@ -56,7 +56,7 @@ def lambda_handler(event, context):
 
         result_json = run_strategy(df, Strategy, params, name, symbols, t_frame)
         # url = "https://azaleasites.online/api/backtest/result"
-        url = "http://54.178.163.184:8000/api/backtest/result"
+        url = "http://54.178.163.184:8000/api/backtest/result/"
         
         data = {"info": body, "result": result_json}
         response = requests.post(
