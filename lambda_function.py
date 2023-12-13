@@ -35,7 +35,7 @@ def lambda_handler(event, context):
         records = event["Records"]
         for record in records:
             body = json.loads(record.get("body"))
-            print("record body", body)
+            # print("record body", body)
             symbols = body.get("symbols", ["BTC/USDT"])
             t_frame = body.get("t_frame", "4h")
             since = body.get("since", "2018-01-01T00:00:00Z")
@@ -51,8 +51,8 @@ def lambda_handler(event, context):
 
         if df.empty:
             raise ValueError("No data found")
-        else:
-            print("Data found", df.tail())
+        # else:
+            # print("Data found", df.tail())
 
         result_json = run_strategy(df, Strategy, params, name, symbols, t_frame)
         # url = "https://azaleasites.online/api/backtest/result"
@@ -85,7 +85,7 @@ def run_strategy(data, strategy, params, name, symbols, t_frame):
     try:
         path = "/tmp/"
         filename = f"{name}_{'_'.join(symbols).replace('/', '-')}_{t_frame}_{strftime('%Y%m%d-%H%M%S', gmtime())}"
-        bt.plot(filename=path + filename, resample=False, open_browser=False)
+        bt.plot(filename=path + filename, resample=True, superimpose=False, open_browser=False)
         print("plot ok")
         s3_fn = upload_s3(path=path, name=filename + ".html")
     except Exception as e:

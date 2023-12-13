@@ -6,7 +6,6 @@ def history_data(
     t_frame="4h",
     since="2017-01-01T00:00:00Z",
     default_type="future",
-    sandbox_mode=False,
 ):
     # Initialize exchange
     try:
@@ -19,8 +18,8 @@ def history_data(
             }
         )
 
-        if hasattr(exchange, "set_sandbox_mode"):
-            exchange.set_sandbox_mode(sandbox_mode)
+        # if hasattr(exchange, "set_sandbox_mode"):
+        #     exchange.set_sandbox_mode(sandbox_mode)
 
     except AttributeError:
         print(f'Exchange "{exch}" not found.')
@@ -44,7 +43,7 @@ def history_data(
     # Fetch data for each symbol
     for symbol in symbols:
         while from_timestamp < now:
-            print("Fetching candles starting from", exchange.iso8601(from_timestamp))
+            # print("Fetching candles starting from", exchange.iso8601(from_timestamp))
             ohlcvs = exchange.fetch_ohlcv(symbol, t_frame, from_timestamp)
             if not len(ohlcvs):
                 break

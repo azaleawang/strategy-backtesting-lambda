@@ -15,8 +15,14 @@ RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz && \
 # 清理安裝檔案
 RUN rm -R ta-lib ta-lib-0.4.0-src.tar.gz
 
-COPY . /var/task/
-RUN pip3 install -r /var/task/requirements.txt
+COPY requirements.txt /var/task/
+
+RUN pip3 install --no-cache-dir -r /var/task/requirements.txt
+
+# 將修改的plot函數取代原本的檔案
+COPY _plotting.py /var/lang/lib/python3.8/site-packages/backtesting/_plotting.py
+
 # COPY lambda_function.py ./
+COPY lambda_function.py history.py config.py /var/task/
 
 CMD ["lambda_function.lambda_handler"]
