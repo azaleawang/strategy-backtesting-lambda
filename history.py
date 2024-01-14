@@ -1,5 +1,6 @@
 import ccxt
 import pandas as pd
+
 def history_data(
     exch="binance",
     symbols=["BTC/USDT"],
@@ -17,10 +18,7 @@ def history_data(
                 },
             }
         )
-
-        # if hasattr(exchange, "set_sandbox_mode"):
-        #     exchange.set_sandbox_mode(sandbox_mode)
-
+        
     except AttributeError:
         print(f'Exchange "{exch}" not found.')
         quit()
@@ -38,12 +36,10 @@ def history_data(
     ohlcv_all = pd.DataFrame()
     from_timestamp = exchange.parse8601(since)
     now = exchange.milliseconds()
-    # Function to fetch OHLCV
 
     # Fetch data for each symbol
     for symbol in symbols:
         while from_timestamp < now:
-            # print("Fetching candles starting from", exchange.iso8601(from_timestamp))
             ohlcvs = exchange.fetch_ohlcv(symbol, t_frame, from_timestamp)
             if not len(ohlcvs):
                 break

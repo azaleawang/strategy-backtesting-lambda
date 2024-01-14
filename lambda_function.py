@@ -8,34 +8,11 @@ import requests
 import logging
 import importlib.util
 
-# event = {
-#     "Records": [
-#         {
-#             "messageId": "19dd0b57-b21e-4ac1-bd88-01bbb068cb78",
-#             "receiptHandle": "MessageReceiptHandle",
-#             "body": '{"symbols": ["ETH/USDT"], "t_frame": "1h", "name": "SuperTrend", "s3_url": "https://my-trading-bot.s3.ap-northeast-1.amazonaws.com/backtest/strategy/"}',
-#             "attributes": {
-#                 "ApproximateReceiveCount": "1",
-#                 "SentTimestamp": "1523232000000",
-#                 "SenderId": "123456789012",
-#                 "ApproximateFirstReceiveTimestamp": "1523232000001",
-#             },
-#             "messageAttributes": {},
-#             "md5OfBody": "{{{md5_of_body}}}",
-#             "eventSource": "aws:sqs",
-#             "eventSourceARN": "arn:aws:sqs:us-east-1:123456789012:MyQueue",
-#             "awsRegion": "us-east-1",
-#         }
-#     ]
-# }
-
-
 def lambda_handler(event, context):
     try:
         records = event["Records"]
         for record in records:
             body = json.loads(record.get("body"))
-            # print("record body", body)
             symbols = body.get("symbols", ["BTC/USDT"])
             t_frame = body.get("t_frame", "4h")
             since = body.get("since", "2018-01-01T00:00:00Z")
@@ -55,7 +32,6 @@ def lambda_handler(event, context):
             # print("Data found", df.tail())
 
         result_json = run_strategy(df, Strategy, params, name, symbols, t_frame)
-        # url = "https://azaleasites.online/api/backtest/result"
         url = "http://54.178.163.184:8000/api/v1/backtests/result/"
         
         data = {"info": body, "result": result_json}
@@ -136,6 +112,3 @@ def upload_s3(
         s3.Bucket(s3_bucket).put_object(Key=s3_dir + name, Body=data)
         print(f"{s3_dir + name} uploaded!")
         return s3_dir + name
-
-
-# lambda_handler(event, 2)
